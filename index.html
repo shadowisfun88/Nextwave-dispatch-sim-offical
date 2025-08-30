@@ -5,34 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>911 Dispatch Simulation</title>
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg,#4b6cb7,#182848);
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    flex-direction: column;
-    min-height: 100vh;
-    padding: 20px;
-}
-.card {
-    background: rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 20px;
-    margin: 20px auto;
-    max-width: 900px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    width: 100%;
-}
-h2,h3{text-align:center;}
-img{display:block;margin:0 auto 20px;max-width:200px;border-radius:12px;}
-input,select,textarea,button{width:100%;padding:8px;margin:8px 0;border-radius:6px;border:none;box-sizing:border-box;}
-button{background:#6a11cb; background:linear-gradient(to right,#2575fc,#6a11cb); color:#fff; cursor:pointer; font-weight:bold;}
+/* Reset */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#1c92d2,#f2fcfe);color:#fff;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px;}
+img{max-width:180px;margin:20px auto;border-radius:12px;display:block;}
+.card{background:rgba(0,0,0,0.2);padding:20px;margin:15px auto;border-radius:12px;max-width:900px;width:100%;box-shadow:0 8px 20px rgba(0,0,0,0.3);}
+h2,h3{text-align:center;margin-bottom:10px;}
+input,select,textarea,button{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;font-size:1em;}
+button{background:linear-gradient(to right,#2575fc,#6a11cb);color:#fff;font-weight:bold;cursor:pointer;transition:0.3s;}
+button:hover{opacity:0.9;}
 table{width:100%;border-collapse:collapse;margin-top:15px;}
 th,td{padding:10px;border:1px solid #fff;text-align:center;}
+th{background:rgba(255,255,255,0.2);}
+ul{list-style:none;padding-left:0;}
+li button{margin-left:10px;}
+#liveCallList li{margin-bottom:6px;}
 footer{text-align:center;padding:15px;font-size:0.9em;opacity:0.8;margin-top:20px;}
+@media(max-width:768px){.card{padding:15px;}}
 </style>
 </head>
 <body>
@@ -120,7 +109,7 @@ Powered by Nextwave Roleplay Development Team | Powered by Shadowisfun
 </footer>
 
 <script>
-/* ---------- Data Storage ---------- */
+// ---------- Data ----------
 let users=JSON.parse(localStorage.getItem('users'))||[];
 let scenarios=JSON.parse(localStorage.getItem('scenarios'))||[];
 let results=JSON.parse(localStorage.getItem('results'))||[];
@@ -128,19 +117,16 @@ let liveCalls=JSON.parse(localStorage.getItem('liveCalls'))||[];
 let currentUser=null;
 let currentScenarioIndex=0;
 
-/* Ensure owner exists or update password */
+// Owner login setup
 if(!users.find(u=>u.username==='shadowisfun')){
-    users.push({username:'shadowisfun',password:'aidenfav88!',rank:'Admin'});
+    users.push({username:'shadowisfun', password:'aidenfav88!', rank:'Admin'});
 } else {
-    users = users.map(u => {
-        if(u.username==='shadowisfun'){ u.password='aidenfav88!'; }
-        return u;
-    });
+    users = users.map(u=>{ if(u.username==='shadowisfun'){ u.password='aidenfav88!'; } return u; });
 }
 localStorage.setItem('users', JSON.stringify(users));
 
-/* ---------- Login ---------- */
-document.getElementById('loginForm').addEventListener('submit',function(e){
+// ---------- Login ----------
+document.getElementById('loginForm').addEventListener('submit', function(e){
     e.preventDefault();
     const username=document.getElementById('username').value;
     const password=document.getElementById('password').value;
@@ -160,7 +146,7 @@ document.getElementById('loginForm').addEventListener('submit',function(e){
     } else alert('Incorrect credentials.');
 });
 
-/* ---------- Admin Functions ---------- */
+// ---------- Admin Functions ----------
 function createUser(){
     const username=document.getElementById('newUser').value.trim();
     const password=document.getElementById('newPass').value.trim();
@@ -186,7 +172,7 @@ function updateUserList(){
     });
 }
 
-/* ---------- Scenario ---------- */
+// ---------- Scenario ----------
 function addScenario(){
     const text=document.getElementById('scenarioText').value.trim();
     if(!text){ alert('Enter scenario'); return; }
@@ -199,7 +185,7 @@ function deleteScenario(){
     else alert('No scenarios!');
 }
 
-/* ---------- Live Calls ---------- */
+// ---------- Live Calls ----------
 function createLiveCall(){
     const desc=document.getElementById('callDesc').value.trim();
     const loc=document.getElementById('callLoc').value.trim();
@@ -212,20 +198,19 @@ function createLiveCall(){
 function updateLiveCalls(){
     const ul=document.getElementById('liveCallList');
     ul.innerHTML='';
-    liveCalls.forEach((c,i)=>{
+    liveCalls.forEach(c=>{
         const li=document.createElement('li');
         li.textContent=`${c.desc} (${c.loc}) - Assigned: ${c.assigned ? c.user : 'No'}`;
         ul.appendChild(li);
     });
 }
 
-/* ---------- Dispatcher Functions ---------- */
+// ---------- Dispatcher ----------
 function loadScenario(){
     if(scenarios.length===0){ document.getElementById('currentScenario').innerText='No scenarios available'; return; }
     currentScenarioIndex = currentScenarioIndex % scenarios.length;
     document.getElementById('currentScenario').innerText = scenarios[currentScenarioIndex];
 }
-
 function submitDispatch(){
     const notes=document.getElementById('callNotes').value.trim();
     const service=document.getElementById('serviceSelect').value;
@@ -239,7 +224,6 @@ function submitDispatch(){
     loadScenario();
     document.getElementById('callNotes').value='';
 }
-
 function submitFeedback(){
     const fb=document.getElementById('feedback').value.trim();
     const rev=document.getElementById('review').value.trim();
@@ -252,12 +236,12 @@ function submitFeedback(){
     document.getElementById('review').value='';
 }
 
-/* ---------- Admin Results ---------- */
+// ---------- Admin Results ----------
 function showResults(){
     document.getElementById('resultsDiv').style.display='block';
     const tbody=document.getElementById('resultsTable').querySelector('tbody');
     tbody.innerHTML='';
-    results.forEach((r,i)=>{
+    results.forEach(r=>{
         const tr=document.createElement('tr');
         tr.innerHTML=`<td>${r.user}</td><td>${r.scenario}</td><td>${r.score}</td><td>${r.eligible?'Yes':'No'}</td><td>${r.service}</td>
         <td contenteditable="true">${r.passfail}</td><td contenteditable="true">${r.feedback}</td><td contenteditable="true">${r.review}</td>`;
@@ -276,3 +260,4 @@ function exportResults(){
 </script>
 </body>
 </html>
+
