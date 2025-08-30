@@ -3,18 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>911 Dispatch Simulation</title>
+<title>911 Dispatch Simulator</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#1c92d2,#f2fcfe);color:#fff;min-height:100vh;display:flex;flex-direction:column;}
-img{max-width:180px;margin:20px auto;border-radius:12px;display:block;}
-.sidebar{background:rgba(0,0,0,0.3);width:200px;min-height:100vh;padding:20px;position:fixed;}
+body{margin:0;font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1c92d2,#6dd5ed);color:#fff;display:flex;flex-direction:column;min-height:100vh;}
+img.logo{max-width:150px;margin-bottom:20px;}
+.container{width:100%;display:flex;justify-content:center;align-items:center;flex:1;}
+.card{background:rgba(0,0,0,0.25);padding:30px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.4);width:350px;text-align:center;}
+input,button{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:none;font-size:1em;}
+input{background:rgba(255,255,255,0.2);color:#fff;}
+input::placeholder{color:rgba(255,255,255,0.7);}
+button{background:linear-gradient(90deg,#2575fc,#6a11cb);color:#fff;font-weight:bold;cursor:pointer;transition:0.3s;}
+button:hover{opacity:0.9;}
+p.link{cursor:pointer;text-decoration:underline;margin-top:10px;color:#fff;}
+h2{margin-bottom:20px;}
+.sidebar{background:rgba(0,0,0,0.3);width:220px;min-height:100vh;padding:20px;position:fixed;display:none;}
 .sidebar h3{margin-bottom:15px;}
 .sidebar button{width:100%;margin:5px 0;background:linear-gradient(to right,#2575fc,#6a11cb);padding:10px;border:none;border-radius:6px;cursor:pointer;transition:0.3s;}
 .sidebar button:hover{opacity:0.9;}
-.main{margin-left:220px;padding:20px;flex:1;}
-.card{background:rgba(0,0,0,0.2);padding:20px;margin:15px 0;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.3);}
-input,select,textarea,button{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;font-size:1em;}
+.main{margin-left:240px;padding:20px;flex:1;}
 table{width:100%;border-collapse:collapse;margin-top:15px;}
 th,td{padding:10px;border:1px solid #fff;text-align:center;}
 th{background:rgba(255,255,255,0.2);}
@@ -25,16 +31,15 @@ ul{list-style:none;padding-left:0;}
 .status-passed{color:limegreen;font-weight:bold;}
 .status-failed{color:red;font-weight:bold;}
 footer{text-align:center;padding:15px;font-size:0.9em;opacity:0.8;margin-top:20px;}
-p.link{cursor:pointer;text-decoration:underline;margin-top:10px;text-align:center;}
-@media(max-width:768px){.sidebar{position:relative;width:100%;} .main{margin-left:0;}}
+@media(max-width:768px){.sidebar{position:relative;width:100%;}.main{margin-left:0;}}
 </style>
 </head>
 <body>
 
-<img src="https://sdmntprnorthcentralus.oaiusercontent.com/files/00000000-7c9c-622f-ae4e-fd7da774c7d3/raw?se=2025-08-30T05%3A14%3A55Z&sp=r&sv=2024-08-04&sr=b&scid=55e111af-e330-5bff-b3f6-22bb066912e1&skoid=add8ee7d-5fc7-451e-b06e-a82b2276cf62&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-08-29T19%3A52%3A52Z&ske=2025-08-30T19%3A52%3A52Z&sks=b&skv=2024-08-04&sig=x9S9pY9JHsODKlcYnlkjmfJnSgDpBqWTd7z6JTQQBu4%3D" alt="911 Dispatch Logo">
-
+<div class="container">
 <!-- LOGIN -->
 <div id="loginDiv" class="card">
+<img class="logo" src="https://i.imgur.com/NxV5G4V.png" alt="911 Dispatch Logo">
 <h2>Login</h2>
 <input type="text" id="loginUser" placeholder="Username">
 <input type="password" id="loginPass" placeholder="Password">
@@ -43,17 +48,20 @@ p.link{cursor:pointer;text-decoration:underline;margin-top:10px;text-align:cente
 </div>
 
 <!-- REQUEST ACCOUNT -->
-<div id="requestDiv" class="card" style="display:none;">
+<div id="requestDiv" class="card">
+<img class="logo" src="https://i.imgur.com/NxV5G4V.png" alt="911 Dispatch Logo">
 <h2>Request Account</h2>
-<input type="text" id="reqUser" placeholder="Username">
+<input type="text" id="reqUser" placeholder="Preferred Username">
 <input type="password" id="reqPass" placeholder="Password">
-<button onclick="requestAccount()">Request Account</button>
+<input type="text" id="reqDiscord" placeholder="Your Discord Name">
+<button onclick="requestAccount()">Submit Request</button>
 <p class="link" onclick="showLogin()">Back to Login</p>
 <div id="reqStatus"></div>
 </div>
+</div>
 
 <!-- SIDEBAR -->
-<div class="sidebar" id="sidebar" style="display:none;">
+<div class="sidebar" id="sidebar">
 <h3 id="userRole"></h3>
 <button onclick="showPanel('dashboard')">Dashboard</button>
 <button onclick="showPanel('live')">Live Calls</button>
@@ -65,19 +73,16 @@ p.link{cursor:pointer;text-decoration:underline;margin-top:10px;text-align:cente
 
 <!-- MAIN CONTENT -->
 <div class="main">
-<!-- Dashboard -->
 <div id="dashboard" class="card" style="display:none;">
 <h2>Welcome, <span id="dashUser"></span></h2>
 <p>Status: <span id="userStatus" class="status-pending">Pending Approval</span></p>
 </div>
 
-<!-- Live Calls -->
 <div id="live" class="card" style="display:none;">
 <h2>Live Calls</h2>
 <ul id="liveCallList"></ul>
 </div>
 
-<!-- Scenarios -->
 <div id="scenarios" class="card" style="display:none;">
 <h2>Scenario Management</h2>
 <input type="text" id="scenarioText" placeholder="Scenario Description">
@@ -86,7 +91,6 @@ p.link{cursor:pointer;text-decoration:underline;margin-top:10px;text-align:cente
 <ul id="scenarioList"></ul>
 </div>
 
-<!-- Results -->
 <div id="results" class="card" style="display:none;">
 <h2>All Submissions</h2>
 <table id="resultsTable">
@@ -100,7 +104,6 @@ p.link{cursor:pointer;text-decoration:underline;margin-top:10px;text-align:cente
 <button onclick="exportResults()">Export CSV</button>
 </div>
 
-<!-- Pending Accounts -->
 <div id="pending" class="card" style="display:none;">
 <h2>Pending Accounts</h2>
 <ul id="pendingList"></ul>
@@ -112,7 +115,7 @@ Powered by Nextwave Roleplay Development Team | Powered by Shadowisfun
 </footer>
 
 <script>
-// ---------- Data ----------
+// DATA
 let users=JSON.parse(localStorage.getItem('users'))||[];
 let pendingAccounts=JSON.parse(localStorage.getItem('pendingAccounts'))||[];
 let scenarios=JSON.parse(localStorage.getItem('scenarios'))||[];
@@ -120,58 +123,133 @@ let liveCalls=JSON.parse(localStorage.getItem('liveCalls'))||[];
 let results=JSON.parse(localStorage.getItem('results'))||[];
 let currentUser=null;
 
-// Owner setup
+// Owner/Admin setup
 if(!users.find(u=>u.username==='shadowisfun')){
-users.push({username:'shadowisfun', password:'aidenfav88!', rank:'Admin'});
-localStorage.setItem('users',JSON.stringify(users));
+  users.push({username:'shadowisfun', password:'aidenfav88!', rank:'Admin'});
+  localStorage.setItem('users',JSON.stringify(users));
 }
 
-// ---------- Show/Hide Screens ----------
+// SHOW SCREENS
 function showRequest(){document.getElementById('loginDiv').style.display='none';document.getElementById('requestDiv').style.display='block';}
 function showLogin(){document.getElementById('requestDiv').style.display='none';document.getElementById('loginDiv').style.display='block';}
 
-// ---------- Account Request ----------
-function requestAccount(){
-const username=document.getElementById('reqUser').value.trim();
-const password=document.getElementById('reqPass').value.trim();
-if(!username||!password){ alert('Fill all fields'); return; }
-if(users.find(u=>u.username===username)||pendingAccounts.find(p=>p.username===username)){
-alert('Username exists or pending'); return;
-}
-pendingAccounts.push({username,password,status:'Pending'});
-localStorage.setItem('pendingAccounts',JSON.stringify(pendingAccounts));
-document.getElementById('reqStatus').innerText='Waiting for High Command approval...';
-document.getElementById('reqUser').value=''; document.getElementById('reqPass').value='';
-}
-
-// ---------- Login ----------
+// LOGIN
 function login(username,password){
-const user=users.find(u=>u.username===username&&u.password===password);
-if(user){
-currentUser=user;
-document.getElementById('loginDiv').style.display='none';
-document.getElementById('requestDiv').style.display='none';
-document.getElementById('sidebar').style.display='block';
-document.getElementById('dashUser').innerText=currentUser.username;
-document.getElementById('userRole').innerText=currentUser.rank;
-showPanel('dashboard');
-updateScenarioList();
-updateLiveCalls();
-updatePending();
-updateResults();
-}else alert('Incorrect credentials or not approved yet.');
+  const user=users.find(u=>u.username===username && u.password===password);
+  if(user){
+    currentUser=user;
+    document.getElementById('loginDiv').style.display='none';
+    document.getElementById('requestDiv').style.display='none';
+    document.getElementById('sidebar').style.display='block';
+    document.getElementById('dashUser').innerText=currentUser.username;
+    document.getElementById('userRole').innerText=currentUser.rank;
+    showPanel('dashboard');
+    updateScenarioList();
+    updateLiveCalls();
+    updatePending();
+    updateResults();
+  } else alert('Incorrect credentials or not approved yet.');
 }
 
-// ---------- Panels ----------
-function showPanel(id){
-['dashboard','live','scenarios','results','pending'].forEach(p=>document.getElementById(p).style.display='none');
-document.getElementById(id).style.display='block';
-}
-
-// ---------- Logout ----------
+// LOGOUT
 function logout(){currentUser=null;document.getElementById('sidebar').style.display='none';document.getElementById('loginDiv').style.display='block';}
 
-// ---------- Scenarios ----------
+// PANELS
+function showPanel(id){
+  ['dashboard','live','scenarios','results','pending'].forEach(p=>document.getElementById(p).style.display='none');
+  document.getElementById(id).style.display='block';
+}
+
+// REQUEST ACCOUNT
+function requestAccount(){
+  const username=document.getElementById('reqUser').value.trim();
+  const password=document.getElementById('reqPass').value.trim();
+  const discord=document.getElementById('reqDiscord').value.trim();
+  if(!username||!password||!discord){ alert('Fill all fields'); return; }
+  if(users.find(u=>u.username===username)||pendingAccounts.find(p=>p.username===username)){
+    alert('Username exists or pending'); return;
+  }
+  pendingAccounts.push({username,password,discord,status:'Pending'});
+  localStorage.setItem('pendingAccounts',JSON.stringify(pendingAccounts));
+  document.getElementById('reqStatus').innerText='Waiting for High Command approval...';
+  document.getElementById('reqUser').value=''; 
+  document.getElementById('reqPass').value=''; 
+  document.getElementById('reqDiscord').value='';
+}
+
+// SCENARIOS
 function addScenario(){const text=document.getElementById('scenarioText').value.trim();if(!text){ alert('Enter scenario'); return;} scenarios.push(text); localStorage.setItem('scenarios',JSON.stringify(scenarios)); updateScenarioList();}
 function deleteScenario(){ if(scenarios.length>0){ scenarios.pop(); localStorage.setItem('scenarios',JSON.stringify(scenarios)); updateScenarioList(); } }
-function updateScenarioList(){ const ul=document.getElementById('scenarioList
+function updateScenarioList(){ const ul=document.getElementById('scenarioList'); ul.innerHTML=''; scenarios.forEach(s=>{ const li=document.createElement('li'); li.textContent=s; ul.appendChild(li);}); }
+
+// LIVE CALLS
+function updateLiveCalls(){
+  const ul=document.getElementById('liveCallList'); ul.innerHTML='';
+  liveCalls.forEach((c,i)=>{
+    if(c.assigned) return;
+    const li=document.createElement('li');
+    li.textContent=`${c.desc || 'Call'} (${c.loc || 'Location'}) `;
+    ['Fire','EMS','Police'].forEach(service=>{
+      const btn=document.createElement('button'); btn.textContent=service;
+      btn.onclick=()=>dispatchCall(i,service,li);
+      li.appendChild(btn);
+    });
+    ul.appendChild(li);
+  });
+}
+function dispatchCall(index,service,li){
+  liveCalls[index].assigned=true;
+  liveCalls[index].service=service;
+  liveCalls[index].user=currentUser.username;
+  liveCalls[index].score=50;
+  liveCalls[index].eligible=true;
+  results.push({...liveCalls[index],passfail:'Waiting',feedback:'',review:''});
+  localStorage.setItem('liveCalls',JSON.stringify(liveCalls));
+  localStorage.setItem('results',JSON.stringify(results));
+  li.remove();
+}
+
+// RESULTS
+function updateResults(){
+  const tbody=document.getElementById('resultsTable').querySelector('tbody'); tbody.innerHTML='';
+  results.forEach(r=>{
+    const tr=document.createElement('tr');
+    let statusClass='status-waiting';
+    if(r.passfail==='Passed') statusClass='status-passed';
+    else if(r.passfail==='Failed') statusClass='status-failed';
+    tr.innerHTML=`<td>${r.user}</td><td>${r.desc||''}</td><td>${r.score}</td><td>${r.eligible?'Yes':'No'}</td><td>${r.service}</td><td class="${statusClass}">${r.passfail}</td><td>${r.feedback}</td><td>${r.review}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+function exportResults(){
+  let csv='User,Scenario,Score,Eligible,Service,Pass/Fail,Feedback,Review\n';
+  results.forEach(r=>{csv+=`${r.user},${r.desc||''},${r.score},${r.eligible?'Yes':'No'},${r.service},${r.passfail},${r.feedback},${r.review}\n`;});
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='results.csv'; a.click();
+}
+
+// PENDING ACCOUNTS
+function updatePending(){
+  const ul=document.getElementById('pendingList'); ul.innerHTML='';
+  pendingAccounts.forEach((p,i)=>{
+    const li=document.createElement('li'); li.textContent=`${p.username} (${p.discord}) - ${p.status} `;
+    const approve=document.createElement('button'); approve.textContent='Approve';
+    approve.onclick=()=>{
+      users.push({username:p.username,password:p.password,rank:'Dispatcher Trainee'});
+      localStorage.setItem('users',JSON.stringify(users));
+      pendingAccounts.splice(i,1);
+      localStorage.setItem('pendingAccounts',JSON.stringify(pendingAccounts));
+      updatePending();
+      alert(`Approved ${p.username}`);
+    };
+    const deny=document.createElement('button'); deny.textContent='Deny';
+    deny.onclick=()=>{
+      pendingAccounts.splice(i,1); localStorage.setItem('pendingAccounts',JSON.stringify(pendingAccounts)); updatePending(); alert(`Denied ${p.username}`);
+    };
+    li.appendChild(approve); li.appendChild(deny); ul.appendChild(li);
+  });
+  document.getElementById('pendingBtn').style.display=(currentUser.rank==='Admin' || currentUser.rank==='Dispatcher High Command')?'block':'none';
+}
+</script>
+
+</body>
+</html>
