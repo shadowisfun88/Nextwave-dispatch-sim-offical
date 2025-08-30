@@ -5,93 +5,75 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>911 Dispatch Simulation</title>
 <style>
-/* Reset */
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#1c92d2,#f2fcfe);color:#fff;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px;}
+body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#1c92d2,#f2fcfe);color:#fff;min-height:100vh;display:flex;flex-direction:column;}
 img{max-width:180px;margin:20px auto;border-radius:12px;display:block;}
-.card{background:rgba(0,0,0,0.2);padding:20px;margin:15px auto;border-radius:12px;max-width:900px;width:100%;box-shadow:0 8px 20px rgba(0,0,0,0.3);}
-h2,h3{text-align:center;margin-bottom:10px;}
+.sidebar{background:rgba(0,0,0,0.3);width:200px;min-height:100vh;padding:20px;position:fixed;}
+.sidebar h3{margin-bottom:15px;}
+.sidebar button{width:100%;margin:5px 0;background:linear-gradient(to right,#2575fc,#6a11cb);padding:10px;border:none;border-radius:6px;cursor:pointer;transition:0.3s;}
+.sidebar button:hover{opacity:0.9;}
+.main{margin-left:220px;padding:20px;flex:1;}
+.card{background:rgba(0,0,0,0.2);padding:20px;margin:15px 0;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.3);}
 input,select,textarea,button{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;font-size:1em;}
-button{background:linear-gradient(to right,#2575fc,#6a11cb);color:#fff;font-weight:bold;cursor:pointer;transition:0.3s;}
-button:hover{opacity:0.9;}
 table{width:100%;border-collapse:collapse;margin-top:15px;}
 th,td{padding:10px;border:1px solid #fff;text-align:center;}
 th{background:rgba(255,255,255,0.2);}
 ul{list-style:none;padding-left:0;}
-li button{margin-left:10px;}
 #liveCallList li{margin-bottom:6px;}
+.status-pending{color:yellow;font-weight:bold;}
+.status-waiting{color:deepskyblue;font-weight:bold;}
+.status-passed{color:limegreen;font-weight:bold;}
+.status-failed{color:red;font-weight:bold;}
 footer{text-align:center;padding:15px;font-size:0.9em;opacity:0.8;margin-top:20px;}
-@media(max-width:768px){.card{padding:15px;}}
+@media(max-width:768px){.sidebar{position:relative;width:100%;} .main{margin-left:0;}}
 </style>
 </head>
 <body>
 
 <img src="https://sdmntprnorthcentralus.oaiusercontent.com/files/00000000-7c9c-622f-ae4e-fd7da774c7d3/raw?se=2025-08-30T05%3A14%3A55Z&sp=r&sv=2024-08-04&sr=b&scid=55e111af-e330-5bff-b3f6-22bb066912e1&skoid=add8ee7d-5fc7-451e-b06e-a82b2276cf62&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-08-29T19%3A52%3A52Z&ske=2025-08-30T19%3A52%3A52Z&sks=b&skv=2024-08-04&sig=x9S9pY9JHsODKlcYnlkjmfJnSgDpBqWTd7z6JTQQBu4%3D" alt="911 Dispatch Logo">
 
-<!-- Login -->
-<div id="loginDiv" class="card">
-<h2>Login</h2>
-<form id="loginForm">
-<input type="text" id="username" placeholder="Username" required>
-<input type="password" id="password" placeholder="Password" required>
-<button type="submit">Login</button>
-</form>
+<div id="requestDiv" class="card">
+<h2>Request Account</h2>
+<input type="text" id="reqUser" placeholder="Username">
+<input type="password" id="reqPass" placeholder="Password">
+<button onclick="requestAccount()">Request Account</button>
+<div id="reqStatus"></div>
 </div>
 
-<!-- Admin Panel -->
-<div id="adminPanel" class="card" style="display:none;">
-<h2>Admin Panel</h2>
-
-<h3>User Management</h3>
-<input type="text" id="newUser" placeholder="New Username">
-<input type="password" id="newPass" placeholder="Password">
-<select id="newRole">
-<option value="Admin">Admin</option>
-<option value="Dispatcher High Command">Dispatcher High Command</option>
-<option value="Dispatcher Trainee">Dispatcher Trainee</option>
-</select>
-<button onclick="createUser()">Create User</button>
-<h4>Existing Users</h4>
-<ul id="userList"></ul>
-
-<h3>Scenario Management</h3>
-<input type="text" id="scenarioText" placeholder="Scenario Description">
-<button onclick="addScenario()">Add Scenario</button>
-<button onclick="deleteScenario()">Delete Last Scenario</button>
-
-<h3>Live Calls</h3>
-<input type="text" id="callDesc" placeholder="Call Description">
-<input type="text" id="callLoc" placeholder="Call Location">
-<button onclick="createLiveCall()">Create Live Call</button>
-
-<h3>Results</h3>
-<button onclick="showResults()">View All Results</button>
-<button onclick="exportResults()">Export CSV</button>
+<div class="sidebar" id="sidebar" style="display:none;">
+<h3 id="userRole"></h3>
+<button onclick="showPanel('dashboard')">Dashboard</button>
+<button onclick="showPanel('live')">Live Calls</button>
+<button onclick="showPanel('scenarios')">Scenarios</button>
+<button onclick="showPanel('results')">Results</button>
+<button onclick="showPanel('pending')" id="pendingBtn">Pending Accounts</button>
+<button onclick="logout()">Logout</button>
 </div>
 
-<!-- Dispatcher Panel -->
-<div id="dispatcherPanel" class="card" style="display:none;">
-<h2>Dispatcher Panel</h2>
-<h3 id="currentScenario">No scenario loaded</h3>
-<textarea id="callNotes" placeholder="Enter call notes here..."></textarea>
-<select id="serviceSelect">
-<option value="Fire">Fire</option>
-<option value="EMS">EMS</option>
-<option value="Police">Police</option>
-</select>
-<button onclick="submitDispatch()">Submit</button>
+<div class="main">
+<!-- Dashboard -->
+<div id="dashboard" class="card" style="display:none;">
+<h2>Welcome, <span id="dashUser"></span></h2>
+<p>Status: <span id="userStatus" class="status-pending">Pending Approval</span></p>
+</div>
 
-<h3>Feedback & Review</h3>
-<textarea id="feedback" placeholder="Enter feedback"></textarea>
-<textarea id="review" placeholder="Enter review"></textarea>
-<button onclick="submitFeedback()">Submit Feedback</button>
-
-<h3>Live Calls Queue</h3>
+<!-- Live Calls -->
+<div id="live" class="card" style="display:none;">
+<h2>Live Calls</h2>
 <ul id="liveCallList"></ul>
 </div>
 
-<!-- Results Panel -->
-<div id="resultsDiv" class="card" style="display:none;">
+<!-- Scenarios -->
+<div id="scenarios" class="card" style="display:none;">
+<h2>Scenario Management</h2>
+<input type="text" id="scenarioText" placeholder="Scenario Description">
+<button onclick="addScenario()">Add Scenario</button>
+<button onclick="deleteScenario()">Delete Last Scenario</button>
+<ul id="scenarioList"></ul>
+</div>
+
+<!-- Results -->
+<div id="results" class="card" style="display:none;">
 <h2>All Submissions</h2>
 <table id="resultsTable">
 <thead>
@@ -101,7 +83,14 @@ footer{text-align:center;padding:15px;font-size:0.9em;opacity:0.8;margin-top:20p
 </thead>
 <tbody></tbody>
 </table>
-<button onclick="closeResults()">Close</button>
+<button onclick="exportResults()">Export CSV</button>
+</div>
+
+<!-- Pending Accounts -->
+<div id="pending" class="card" style="display:none;">
+<h2>Pending Accounts</h2>
+<ul id="pendingList"></ul>
+</div>
 </div>
 
 <footer>
@@ -111,151 +100,121 @@ Powered by Nextwave Roleplay Development Team | Powered by Shadowisfun
 <script>
 // ---------- Data ----------
 let users=JSON.parse(localStorage.getItem('users'))||[];
+let pendingAccounts=JSON.parse(localStorage.getItem('pendingAccounts'))||[];
 let scenarios=JSON.parse(localStorage.getItem('scenarios'))||[];
-let results=JSON.parse(localStorage.getItem('results'))||[];
 let liveCalls=JSON.parse(localStorage.getItem('liveCalls'))||[];
+let results=JSON.parse(localStorage.getItem('results'))||[];
 let currentUser=null;
-let currentScenarioIndex=0;
 
-// Owner login setup
+// Owner setup
 if(!users.find(u=>u.username==='shadowisfun')){
-    users.push({username:'shadowisfun', password:'aidenfav88!', rank:'Admin'});
-} else {
-    users = users.map(u=>{ if(u.username==='shadowisfun'){ u.password='aidenfav88!'; } return u; });
+users.push({username:'shadowisfun', password:'aidenfav88!', rank:'Admin'});
+localStorage.setItem('users',JSON.stringify(users));
 }
-localStorage.setItem('users', JSON.stringify(users));
+
+// ---------- Account Request ----------
+function requestAccount(){
+const username=document.getElementById('reqUser').value.trim();
+const password=document.getElementById('reqPass').value.trim();
+if(!username||!password){ alert('Fill all fields'); return; }
+if(users.find(u=>u.username===username)||pendingAccounts.find(p=>p.username===username)){
+alert('Username exists or pending'); return;
+}
+pendingAccounts.push({username,password,status:'Pending'});
+localStorage.setItem('pendingAccounts',JSON.stringify(pendingAccounts));
+document.getElementById('reqStatus').innerText='Waiting for High Command approval...';
+document.getElementById('reqUser').value=''; document.getElementById('reqPass').value='';
+}
 
 // ---------- Login ----------
-document.getElementById('loginForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    const username=document.getElementById('username').value;
-    const password=document.getElementById('password').value;
-    const user=users.find(u=>u.username===username&&u.password===password);
-    if(user){
-        currentUser=user;
-        alert('Login successful! Role: '+user.rank);
-        document.getElementById('loginDiv').style.display='none';
-        if(user.rank.includes('Dispatcher')){
-            document.getElementById('dispatcherPanel').style.display='block';
-            loadScenario();
-            updateLiveCalls();
-        } else if(user.rank==='Admin'){
-            document.getElementById('adminPanel').style.display='block';
-            updateUserList();
-        }
-    } else alert('Incorrect credentials.');
-});
-
-// ---------- Admin Functions ----------
-function createUser(){
-    const username=document.getElementById('newUser').value.trim();
-    const password=document.getElementById('newPass').value.trim();
-    const role=document.getElementById('newRole').value;
-    if(!username||!password){ alert('Fill all fields'); return; }
-    if(users.find(u=>u.username===username)){ alert('Username exists'); return; }
-    users.push({username,password,rank:role});
-    localStorage.setItem('users',JSON.stringify(users));
-    alert('User created!');
-    updateUserList();
-}
-function updateUserList(){
-    const ul=document.getElementById('userList');
-    ul.innerHTML='';
-    users.forEach((u,i)=>{
-        const li=document.createElement('li');
-        li.textContent=`${u.username} (${u.rank}) `;
-        const delBtn=document.createElement('button');
-        delBtn.textContent='Remove';
-        delBtn.onclick=()=>{ users.splice(i,1); localStorage.setItem('users',JSON.stringify(users)); updateUserList(); };
-        li.appendChild(delBtn);
-        ul.appendChild(li);
-    });
+function login(username,password){
+const user=users.find(u=>u.username===username&&u.password===password);
+if(user){
+currentUser=user;
+document.getElementById('requestDiv').style.display='none';
+document.getElementById('sidebar').style.display='block';
+document.getElementById('dashUser').innerText=currentUser.username;
+document.getElementById('userRole').innerText=currentUser.rank;
+showPanel('dashboard');
+updateScenarioList();
+updateLiveCalls();
+updatePending();
+updateResults();
+}else alert('Incorrect credentials or not approved yet.');
 }
 
-// ---------- Scenario ----------
+// ---------- Panels ----------
+function showPanel(id){
+['dashboard','live','scenarios','results','pending'].forEach(p=>document.getElementById(p).style.display='none');
+document.getElementById(id).style.display='block';
+}
+
+// ---------- Logout ----------
+function logout(){currentUser=null;document.getElementById('sidebar').style.display='none';document.getElementById('requestDiv').style.display='block';}
+
+// ---------- Scenarios ----------
 function addScenario(){
-    const text=document.getElementById('scenarioText').value.trim();
-    if(!text){ alert('Enter scenario'); return; }
-    scenarios.push(text);
-    localStorage.setItem('scenarios',JSON.stringify(scenarios));
-    alert('Scenario added!');
+const text=document.getElementById('scenarioText').value.trim();
+if(!text){ alert('Enter scenario'); return; }
+scenarios.push(text); localStorage.setItem('scenarios',JSON.stringify(scenarios));
+updateScenarioList();
 }
-function deleteScenario(){
-    if(scenarios.length>0){ scenarios.pop(); localStorage.setItem('scenarios',JSON.stringify(scenarios)); alert('Last scenario deleted!'); }
-    else alert('No scenarios!');
-}
+function deleteScenario(){ if(scenarios.length>0){ scenarios.pop(); localStorage.setItem('scenarios',JSON.stringify(scenarios)); updateScenarioList(); } }
+function updateScenarioList(){ const ul=document.getElementById('scenarioList'); ul.innerHTML=''; scenarios.forEach(s=>{ const li=document.createElement('li'); li.textContent=s; ul.appendChild(li);}); }
 
 // ---------- Live Calls ----------
-function createLiveCall(){
-    const desc=document.getElementById('callDesc').value.trim();
-    const loc=document.getElementById('callLoc').value.trim();
-    if(!desc||!loc){ alert('Fill all fields'); return; }
-    liveCalls.push({desc,loc,assigned:false,user:'',notes:'',service:'',score:0,eligible:false,feedback:'',review:''});
-    localStorage.setItem('liveCalls',JSON.stringify(liveCalls));
-    alert('Live call created!');
-    updateLiveCalls();
-}
 function updateLiveCalls(){
-    const ul=document.getElementById('liveCallList');
-    ul.innerHTML='';
-    liveCalls.forEach(c=>{
-        const li=document.createElement('li');
-        li.textContent=`${c.desc} (${c.loc}) - Assigned: ${c.assigned ? c.user : 'No'}`;
-        ul.appendChild(li);
-    });
+const ul=document.getElementById('liveCallList'); ul.innerHTML='';
+liveCalls.forEach((c,i)=>{
+if(c.assigned) return;
+const li=document.createElement('li');
+li.textContent=`${c.desc} (${c.loc}) `;
+const fireBtn=document.createElement('button'); fireBtn.textContent='Fire'; fireBtn.onclick=()=>dispatchCall(i,'Fire',li);
+const emsBtn=document.createElement('button'); emsBtn.textContent='EMS'; emsBtn.onclick=()=>dispatchCall(i,'EMS',li);
+const policeBtn=document.createElement('button'); policeBtn.textContent='Police'; policeBtn.onclick=()=>dispatchCall(i,'Police',li);
+li.appendChild(fireBtn); li.appendChild(emsBtn); li.appendChild(policeBtn);
+ul.appendChild(li);
+});
+}
+function dispatchCall(index,service,li){
+liveCalls[index].assigned=true; liveCalls[index].service=service; liveCalls[index].user=currentUser.username; liveCalls[index].score=50; liveCalls[index].eligible=true;
+results.push({...liveCalls[index],passfail:'Waiting',feedback:'',review:''});
+localStorage.setItem('liveCalls',JSON.stringify(liveCalls));
+localStorage.setItem('results',JSON.stringify(results));
+li.remove();
 }
 
-// ---------- Dispatcher ----------
-function loadScenario(){
-    if(scenarios.length===0){ document.getElementById('currentScenario').innerText='No scenarios available'; return; }
-    currentScenarioIndex = currentScenarioIndex % scenarios.length;
-    document.getElementById('currentScenario').innerText = scenarios[currentScenarioIndex];
+// ---------- Results ----------
+function updateResults(){
+const tbody=document.getElementById('resultsTable').querySelector('tbody'); tbody.innerHTML='';
+results.forEach(r=>{
+const tr=document.createElement('tr');
+let statusClass='status-waiting';
+if(r.passfail==='Passed') statusClass='status-passed';
+else if(r.passfail==='Failed') statusClass='status-failed';
+tr.innerHTML=`<td>${r.user}</td><td>${r.desc||''}</td><td>${r.score}</td><td>${r.eligible?'Yes':'No'}</td><td>${r.service}</td><td class="${statusClass}">${r.passfail}</td><td>${r.feedback}</td><td>${r.review}</td>`;
+tbody.appendChild(tr);
+});
 }
-function submitDispatch(){
-    const notes=document.getElementById('callNotes').value.trim();
-    const service=document.getElementById('serviceSelect').value;
-    if(!notes){ alert('Enter notes'); return; }
-    const score=notes.length;
-    const eligible = score>=50;
-    results.push({user:currentUser.username, scenario:scenarios[currentScenarioIndex], score, eligible, service, passfail:'Pending', feedback:'', review:''});
-    localStorage.setItem('results',JSON.stringify(results));
-    alert(`Submitted! Score: ${score}, Eligible: ${eligible ? 'Yes':'No'}`);
-    currentScenarioIndex++;
-    loadScenario();
-    document.getElementById('callNotes').value='';
-}
-function submitFeedback(){
-    const fb=document.getElementById('feedback').value.trim();
-    const rev=document.getElementById('review').value.trim();
-    if(results.length===0){ alert('No submissions yet'); return; }
-    results[results.length-1].feedback=fb;
-    results[results.length-1].review=rev;
-    localStorage.setItem('results',JSON.stringify(results));
-    alert('Feedback submitted!');
-    document.getElementById('feedback').value='';
-    document.getElementById('review').value='';
-}
-
-// ---------- Admin Results ----------
-function showResults(){
-    document.getElementById('resultsDiv').style.display='block';
-    const tbody=document.getElementById('resultsTable').querySelector('tbody');
-    tbody.innerHTML='';
-    results.forEach(r=>{
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${r.user}</td><td>${r.scenario}</td><td>${r.score}</td><td>${r.eligible?'Yes':'No'}</td><td>${r.service}</td>
-        <td contenteditable="true">${r.passfail}</td><td contenteditable="true">${r.feedback}</td><td contenteditable="true">${r.review}</td>`;
-        tbody.appendChild(tr);
-    });
-}
-function closeResults(){ document.getElementById('resultsDiv').style.display='none'; }
 function exportResults(){
-    let csv='User,Scenario,Score,Eligible,Service,Pass/Fail,Feedback,Review\n';
-    results.forEach(r=>{ csv+=`${r.user},${r.scenario},${r.score},${r.eligible?'Yes':'No'},${r.service},${r.passfail},${r.feedback},${r.review}\n`; });
-    const a=document.createElement('a');
-    a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-    a.download='results.csv';
-    a.click();
+let csv='User,Scenario,Score,Eligible,Service,Pass/Fail,Feedback,Review\n';
+results.forEach(r=>{csv+=`${r.user},${r.desc||''},${r.score},${r.eligible?'Yes':'No'},${r.service},${r.passfail},${r.feedback},${r.review}\n`;});
+const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='results.csv'; a.click();
+}
+
+// ---------- Pending Accounts ----------
+function updatePending(){
+const ul=document.getElementById('pendingList'); ul.innerHTML='';
+pendingAccounts.forEach((p,i)=>{
+const li=document.createElement('li'); li.textContent=`${p.username} (${p.status}) `;
+const approve=document.createElement('button'); approve.textContent='Approve'; approve.onclick=()=>{
+users.push({username:p.username,password:p.password,rank:'Dispatcher Trainee'}); localStorage.setItem('users',JSON.stringify(users));
+pendingAccounts.splice(i,1); localStorage.setItem('pendingAccounts',JSON.stringify(pendingAccounts)); updatePending(); alert(`Approved ${p.username}`);};
+const deny=document.createElement('button'); deny.textContent='Deny'; deny.onclick=()=>{
+pendingAccounts.splice(i,1); localStorage.setItem('pendingAccounts',JSON.stringify(pendingAccounts)); updatePending(); alert(`Denied ${p.username}`);};
+li.appendChild(approve); li.appendChild(deny); ul.appendChild(li);
+});
+document.getElementById('pendingBtn').style.display=(currentUser.rank==='Admin' || currentUser.rank==='Dispatcher High Command')?'block':'none';
 }
 </script>
 </body>
