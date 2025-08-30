@@ -31,6 +31,9 @@ ul{list-style:none;padding-left:0;}
 .status-passed{color:limegreen;font-weight:bold;}
 .status-failed{color:red;font-weight:bold;}
 footer{text-align:center;padding:15px;font-size:0.9em;opacity:0.8;margin-top:20px;}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);justify-content:center;align-items:center;}
+.modal .card{width:400px;position:relative;}
+.modal .close{position:absolute;top:10px;right:15px;cursor:pointer;font-size:20px;}
 @media(max-width:768px){.sidebar{position:relative;width:100%;}.main{margin-left:0;}}
 </style>
 </head>
@@ -44,20 +47,23 @@ footer{text-align:center;padding:15px;font-size:0.9em;opacity:0.8;margin-top:20p
 <input type="text" id="loginUser" placeholder="Username">
 <input type="password" id="loginPass" placeholder="Password">
 <button onclick="login(document.getElementById('loginUser').value, document.getElementById('loginPass').value)">Login</button>
-<p class="link" onclick="showRequest()">Request Account</p>
+<button onclick="openRequestModal()">Request Account</button>
+</div>
 </div>
 
-<!-- REQUEST ACCOUNT -->
-<div id="requestDiv" class="card">
-<img class="logo" src="https://i.imgur.com/NxV5G4V.png" alt="911 Dispatch Logo">
-<h2>Request Account</h2>
-<input type="text" id="reqUser" placeholder="Preferred Username">
-<input type="password" id="reqPass" placeholder="Password">
-<input type="text" id="reqDiscord" placeholder="Your Discord Name">
-<button onclick="requestAccount()">Submit Request</button>
-<p class="link" onclick="showLogin()">Back to Login</p>
-<div id="reqStatus"></div>
-</div>
+<!-- REQUEST ACCOUNT MODAL -->
+<div id="requestModal" class="modal">
+  <div class="card">
+    <span class="close" onclick="closeRequestModal()">×</span>
+    <img class="logo" src="https://i.imgur.com/NxV5G4V.png" alt="911 Dispatch Logo">
+    <h2>Request Account</h2>
+    <input type="text" id="reqUser" placeholder="Preferred Username">
+    <input type="password" id="reqPass" placeholder="Password">
+    <input type="text" id="reqDiscord" placeholder="Your Discord Name">
+    <button onclick="requestAccount()">Submit Request</button>
+    <p class="link" onclick="closeRequestModal()">Back to Login</p>
+    <div id="reqStatus"></div>
+  </div>
 </div>
 
 <!-- SIDEBAR -->
@@ -123,15 +129,21 @@ let liveCalls=JSON.parse(localStorage.getItem('liveCalls'))||[];
 let results=JSON.parse(localStorage.getItem('results'))||[];
 let currentUser=null;
 
-// Owner/Admin setup
+// OWNER ADMIN SETUP
 if(!users.find(u=>u.username==='shadowisfun')){
   users.push({username:'shadowisfun', password:'aidenfav88!', rank:'Admin'});
   localStorage.setItem('users',JSON.stringify(users));
 }
 
-// SHOW SCREENS
-function showRequest(){document.getElementById('loginDiv').style.display='none';document.getElementById('requestDiv').style.display='block';}
-function showLogin(){document.getElementById('requestDiv').style.display='none';document.getElementById('loginDiv').style.display='block';}
+// MODAL FUNCTIONS
+function openRequestModal(){document.getElementById('requestModal').style.display='flex';}
+function closeRequestModal(){document.getElementById('requestModal').style.display='none';}
+
+// SHOW PANELS
+function showPanel(id){
+  ['dashboard','live','scenarios','results','pending'].forEach(p=>document.getElementById(p).style.display='none');
+  document.getElementById(id).style.display='block';
+}
 
 // LOGIN
 function login(username,password){
@@ -139,7 +151,7 @@ function login(username,password){
   if(user){
     currentUser=user;
     document.getElementById('loginDiv').style.display='none';
-    document.getElementById('requestDiv').style.display='none';
+    document.getElementById('requestModal').style.display='none';
     document.getElementById('sidebar').style.display='block';
     document.getElementById('dashUser').innerText=currentUser.username;
     document.getElementById('userRole').innerText=currentUser.rank;
@@ -148,17 +160,11 @@ function login(username,password){
     updateLiveCalls();
     updatePending();
     updateResults();
-  } else alert('Incorrect credentials or not approved yet.');
+  } else alert('Incorrect credentials or account not approved yet.');
 }
 
 // LOGOUT
 function logout(){currentUser=null;document.getElementById('sidebar').style.display='none';document.getElementById('loginDiv').style.display='block';}
-
-// PANELS
-function showPanel(id){
-  ['dashboard','live','scenarios','results','pending'].forEach(p=>document.getElementById(p).style.display='none');
-  document.getElementById(id).style.display='block';
-}
 
 // REQUEST ACCOUNT
 function requestAccount(){
@@ -253,3 +259,4 @@ function updatePending(){
 
 </body>
 </html>
+
